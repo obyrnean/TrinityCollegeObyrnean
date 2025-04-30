@@ -1,0 +1,37 @@
+#include <iostream>
+#include <iomanip>
+using namespace std;
+
+int main ()
+{
+  int i, x;
+  int sequence[70]; //sequence of 70 integers
+  int range; 
+  
+ //enter up to 70 values
+  for (i = 0; i < 70; i++) {
+    cin >> sequence[i]; }
+    
+   for (i = 0; i < 70; i++) {
+     
+    //range from 20 to 1 (y axis)
+    for (range = 20; range > 0; range--) {
+    cout << right << setw(2) << range << "  |";
+
+    for (i = 0; i < 70; i++) {
+    x = sequence[i]; 
+    if (range <= x) { //fill with starts up till input value
+      cout << "*"; }
+    else 
+      cout << " "; 
+  } 
+      cout << endl;
+  }
+   }
+  //print x axis
+ cout << "----|";
+  for (int j = 1; j <= 7; j++) {
+    cout << "----+----|"; }
+
+	return 0;
+}
