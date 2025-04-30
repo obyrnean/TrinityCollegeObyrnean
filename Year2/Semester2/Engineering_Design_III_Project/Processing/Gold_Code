@@ -1,0 +1,271 @@
+import controlP5.*; // library contains what is necessary for the GUI (Graphical User Interface)
+//import processing.net.*; // this library is imported to carry out networking with the arduino
+
+//Variables:
+ControlP5 cp5;
+//Client arduino; // declaring an object of the client class to network with the arduino
+String data;
+float previousAngle = 0; //Speedometer needle
+boolean elementsChanged = true; 
+float speed = 0; 
+float gas = 90; 
+PImage backCar;
+PImage gasCar; 
+PImage signal; 
+PImage musicNote; 
+PImage phone; 
+PImage car; 
+PImage arrowR;
+PImage arrowL; 
+boolean isMoving = false; // Variable to track if the buggy is currently moving
+int lastUpdateTime = 0; // Variable to store the time of the last update
+boolean blinkArrowL = false; // Variable to control the visibility of arrowL
+int blinkCount = 0; // Variable to count the number of blinks
+boolean visible = true; // Variable to control the visibility of the arrow
+boolean blinkArrowR = false; // Variable to control the visibility of arrowR
+int blinkCountR = 0; // Variable to count the number of blinks for arrowR
+boolean visibleR = true; // Variable to control the visibility of arrowR
+
+
+void setup() {
+  size(1200, 650); // declairing the size of the window
+  cp5 = new ControlP5(this); // Initialize the ControlP5 object
+ // arduino = new Client(this, "172.20.10.11", 80); // Initialize the Arduino Client object with IP address and port(share network connection)
+  backCar = loadImage("backwhitecar45x45.jpg"); 
+  gasCar = loadImage("gasCar45x33.png"); 
+  signal = loadImage("signal40x40.png"); 
+  musicNote = loadImage("musicnote30x49.png");
+  phone = loadImage("phoneemote30x30.png"); 
+  car = loadImage("ccar250x250.png"); 
+  arrowR = loadImage("arrowR50x50.png");
+  arrowL = loadImage("arrowL50x50.png"); 
+  
+  
+   // Customize the StartMotor button
+  cp5.addButton("StartMotor")  // creates a new button with the label "StartMotor" using the ControlP5 library's addButton() method and assigns it to the cp5 ControlP5 object.
+     .setValue(0)
+     .setPosition(480, 60) // positions the button in the middle horizontally
+     .setSize(80, 40) // Set the diameter of the circle to 120 pixels
+     .setColorBackground(color(0, 150, 0)) // Set the background color to green
+     .setColorForeground(color(255)) // Set the foreground (stroke) color
+     .setColorActive(color(255, 255, 0)) // Set the active (click) color to yellow (RGB color values: 255 for red, 255 for green, 0 for blue).
+     .setLabel("START") // Set the label of the button
+     .getCaptionLabel().setFont(createFont("Arial Bold", 13)); // Set the font and size of the label
+     
+      // Customize the StopMotor button
+ cp5.addButton("StopMotor")
+     .setValue(0)
+     .setPosition(630, 60) // positions the button in the middle horizontally
+     .setSize(80, 40) // Set the diameter of the circle to 120 pixels
+     .setColorBackground(color(150, 0, 0)) // Set the background color to red RGB
+     .setColorForeground(color(255)) // Set the foreground (stroke) color
+     .setColorActive(color(255, 255, 0)) // Set the active (click) color of the button to yellow (RGB color values: 255 for red, 255 for green, 0 for blue).
+     .setLabel("STOP") // Set the label of the button
+     .getCaptionLabel().setFont(createFont("Arial Bold", 13)); // Set the font and size of the label
+     
+      //GO/STOP buttons text label
+ cp5.addTextlabel("instructions GO/STOP buttons")
+     .setText("Press to START/STOP motors:")
+     .setPosition(480, 30) // positions the text label
+     .setColorValue(color(255)) // Set the text color
+     .setFont(createFont("Arial", 10)); // Set the font and size of the text
+     
+}
+
+
+void draw() {
+  background(0);
+  
+  //WE NEED TO UPDATE SPEED
+  if (isMoving) {
+    // Calculate the elapsed time since the last update
+    int currentTime = millis();
+    int elapsedTime = currentTime - lastUpdateTime;
+  
+    // If 6 seconds (6000 milliseconds) have passed, increment the distance by 1
+    if (elapsedTime >= 1000) {
+      gas -= 0.1;
+      lastUpdateTime = currentTime; // Update the last update time
+    }
+  }
+  
+  stroke(255); // set color to white
+  strokeWeight(2); 
+  line(400, 200, 460, 200); 
+  line(520, 200, 800, 200); 
+  line(460, 150, 520, 150);
+  line(460, 200, 460, 150);
+  line(520, 200, 520, 150); 
+  image(backCar, 468, 155); 
+  image(gasCar, 545, 155); 
+  image(signal, 615, 155); 
+  image(musicNote, 675, 155); 
+  image(phone, 740, 155);
+  image(car, 480, 265);
+  if (visibleR){
+  image(arrowR, 750, 225);
+  }
+  if (visible) {
+    image(arrowL, 420, 225); 
+  }
+  strokeWeight(3);
+  line(510, 310, 560, 310);
+  line(650, 310, 700, 310);
+  line(510, 450, 560, 450);
+  line(650, 450, 700, 450);
+  
+  fill(255);
+  textAlign(LEFT);
+  textSize(18);
+  text("2.7 bar", 490, 340);
+  text("2.8 bar", 665, 340);
+  text("2.8 bar", 490, 480);
+  text("2.9 bar", 665, 480);
+  textSize(25);
+  text("Y12", 585, 550);
+
+ // Draw first (RIGHT) speedometer components from 0 to 220
+  speedometerArc(width - 250, height - 275, 330); // Draw speedometer arc
+  speedometerLabels_R(width - 250, height - 275, 220, 220); // Draw speedometer labels
+  speedometerNeedle(width - 250, height - 275, 285, 220, speed); // Draw speedometer needle
+  
+  // Draw second (LEFT) speedometer with values from 0 to 100
+  speedometerArc(250, height - 275, 330); // Draw speedometer arc
+  speedometerLabels_L(250, height - 275, 220, 100); // Draw speedometer labels
+  speedometerNeedle(250, height - 275, 285, 100, gas); // Draw speedometer needle
+  
+    // Display received data
+  //if (arduino != null && arduino.available() > 0) { // checks if there is data available from the arduino
+  //data = arduino.readString(); // reads the data from arduino
+//  println(data); // this pirnts the incoming data to our serial monitor on processing
+  delay(500);
+  // check if is a number
+
+ //     if (data.contains("2")) {
+ //   println("Speed limit changed to 13");
+ //   speed = 13; 
+ //     }
+ //     if (data.contains("3")) {
+ //   println("Speed limit changed to 20");
+ //   speed = 180; 
+ //     }
+ //     if (data.contains("4")) {
+ //   println("Turn left ahead");
+ //   blinkArrowL = true; // Start blinking arrowL
+ //   blinkCount = 0; // Reset blink count
+ //     }
+ //     if (data.contains("5")) {
+ //   println("Turn right ahead");
+ //   blinkArrowR = true; // Start blinking arrowR
+ //   blinkCountR = 0; // Reset blink count for arrowR
+ //     }
+ //}
+ // Blink arrowL logic
+  if (blinkArrowL) {
+    if (frameCount % 15 == 0) { // Change visibility every 30 frames (adjust this value for desired blink speed)
+      visible = !visible; // Toggle visibility
+      
+      // Increment blink count when arrowL becomes visible
+      if (visible) {
+        blinkCount++;
+        
+        // Stop blinking after 5 blinks
+        if (blinkCount == 5) {
+          blinkArrowL = false;
+          visible = false; // Ensure arrowL is not visible after blinking stops
+        }
+      }
+    }
+  } else {
+    visible = false; // Ensure arrowL is not visible when not blinking
+  }
+  
+  // Blink arrowR logic
+  if (blinkArrowR) {
+    if (frameCount % 15 == 0) { // Change visibility every 30 frames (its just blinking speed)
+      visibleR = !visibleR; // Toggle visibility
+      
+      // Increment blink count when arrowR becomes visible
+      if (visibleR) {
+        blinkCountR++;
+        
+        // Stop blinking after 5 blinks
+        if (blinkCountR == 5) {
+          blinkArrowR = false;
+          visibleR = false; // Ensure arrowR is not visible after blinking stops
+        }
+      }
+    }
+  } else {
+    visibleR = false; // Ensure arrowR is not visible when not blinking
+  }
+}
+
+
+public void StartMotor(int theValue) { // function to tell the arduino to start the motors
+//  if (arduino != null && arduino.active()) { // checks arduino is active
+  //  arduino.write("g"); // writes the character g to arduino to be processed accordingly
+    println("Start Motor button pressed!"); // this prints to our serial monitor to allow us to confirm the button is clicked successfully
+    isMoving = true; // Set the flag to indicate the buggy is moving
+    speed = 100; 
+ // }
+}
+
+public void StopMotor(int theValue) {
+ // if (arduino != null && arduino.active()) { // checks if active similar to start
+  //  arduino.write("s"); // writes character s to the arduino to inidcate to stop.
+    println("Stop Motor button pressed!"); // alerts us that the button was successfully pressed.
+    isMoving = false; // Set the flag to indicate the buggy has stopped
+    speed = 0; 
+ // }
+}
+
+void speedometerNeedle(float x, float y, float diameter, float MaxValue, float value) {
+  float angle = map(value, 0, MaxValue, PI + QUARTER_PI, TWO_PI + PI - QUARTER_PI);
+  
+  //Speedometer needle:
+  //if (abs(angle - previousAngle) > 0.01) {
+    pushMatrix(); 
+    translate(x, y);
+    rotate(angle);
+    stroke(255, 0, 0);
+    strokeWeight(3);
+    line(0,0, diameter/2, 0);
+    popMatrix();
+    previousAngle = angle; //update previous angle
+    elementsChanged = true; 
+ // }
+}
+
+void speedometerLabels_R(float x, float y, float diameter, float maxValue) {
+  textAlign(CENTER, CENTER);
+  textSize(18);
+  fill(255);
+  for (int i = 0; i <= maxValue; i += 20) {
+    float labelAngle = map(i, 0, 220, PI + QUARTER_PI, TWO_PI + PI - QUARTER_PI);
+    float labelSpeed = map(i, 0, 220, 0, diameter/2 - 40); //increase distance between label and center
+    float xLabel = x + (diameter/2 + 30) * cos(labelAngle); //adjust distance between labels and center
+    float yLabel = y + (diameter/2 + 30) * sin(labelAngle); 
+    text(str(i), xLabel, yLabel);
+  }
+}
+
+void speedometerLabels_L(float x, float y, float diameter, float maxValue) {
+  textAlign(CENTER, CENTER);
+  textSize(18);
+  fill(255);
+  for (int i = 0; i <= maxValue; i += 10) {
+    float labelAngle = map(i, 0, maxValue, PI + QUARTER_PI, TWO_PI + PI - QUARTER_PI);
+    float labelSpeed = map(i, 0, maxValue, 0, diameter/2 - 40); //increase distance between label and center
+    float xLabel = x + (diameter/2 + 30) * cos(labelAngle); //adjust distance between labels and center
+    float yLabel = y + (diameter/2 + 30) * sin(labelAngle); 
+    text(str(i), xLabel, yLabel);
+  }
+}
+
+void speedometerArc(float x, float y, float diameter) {
+  strokeWeight(5);
+  noFill(); 
+  stroke(255);
+  arc(x, y, diameter, diameter, PI * QUARTER_PI, TWO_PI + PI - QUARTER_PI);
+}
