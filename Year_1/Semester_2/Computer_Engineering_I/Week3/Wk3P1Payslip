@@ -1,0 +1,50 @@
+/**
+* Week 3 - Finding Net Pay
+* See detailed specification on Blackboard in Week 3
+* Task 1 - calculations only
+*/
+
+#include <string> 
+#include <iostream>
+#include <iomanip>
+using namespace std;
+
+int main()
+{
+  const double BASIC_HOURS = 35;//hours above this is overtime
+	const double OTIME_MULT = 1.5;//the multiplier for overtime hours
+	const double TAX_RATE = 0.20;//all pay is taxed at 20%
+	const double PRSI_RATE = 0.025;//PRSI is 2.5% of gross pay
+
+	double hours, hourly_rate, tax_credit, gross_pay, tax, prsi, net_pay;
+  
+	cout << "Enter hours, hourly rate, tax credit:";
+  cin >> hours >> hourly_rate >> tax_credit;
+
+	//Calculate the gross pay
+  if (hours > BASIC_HOURS)
+    gross_pay = (hours - BASIC_HOURS) * (hourly_rate * OTIME_MULT) + (BASIC_HOURS * hourly_rate);
+  else 
+    gross_pay = hours * hourly_rate;
+  
+	//Calculate the deductions based on the gross pay
+	//calculate tax ...
+
+	//apply the tax credit (to pass tests 4 & 5) ...
+	if (tax_credit > (gross_pay * TAX_RATE))
+    tax = 0;
+  else
+    tax = (gross_pay * TAX_RATE) - tax_credit;
+
+  //calculate PRSI ...
+  prsi = gross_pay * PRSI_RATE;
+
+	//calculate net_pay after deductions ...
+  net_pay = gross_pay - tax - prsi; 
+
+	//Print out the main details
+	cout << "Gross:" << gross_pay << " Tax:" << tax << " PRSI:" << prsi;
+	cout << " Net:" << net_pay << endl;
+
+	return 0;
+}
