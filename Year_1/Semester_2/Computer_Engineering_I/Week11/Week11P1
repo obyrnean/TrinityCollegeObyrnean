@@ -1,0 +1,110 @@
+#include <iostream>
+#include <iomanip>
+#include <string> 
+
+using namespace std;
+
+const string SENTINEL = "X0000";
+const double REG_FIXED_FEE = 10.00;
+const int REG_FREE_MINS = 50;
+const double REG_FEE_PER_MIN = 0.20;
+const double PRE_FIXED_FEE = 25.00;
+const int PRE_DAY_FREE_MINS = 75;
+const int PRE_OFFPEAK_FREE_MINS = 100;
+const double PRE_DAY_PER_MIN = 0.10;
+const double PRE_OFFPEAK_PER_MIN = 0.05;
+
+
+void read (string& name, double& bal, char& code, int& mins1, int& mins2);
+
+double reg_charge (int mins);
+
+double prem_charge (int peak_mins, int off_mins);
+
+void print_bill (string acc, string name, char code, double charge, double bal);
+
+int main()
+{
+    string acc,name;
+    char code;
+    int mins1, mins2;
+    double bal, charge;
+
+  //enter first account
+    cin >> acc; 
+  
+  //cout main head
+   cout << setw(8) << "Account" << setw(15) << "Name" << setw(11) << "Act. Type" << setw(10) << "Charge" << setw(10) << "Balance"; 
+    
+  
+  //sentinel loop
+  while (acc != SENTINEL) {
+      read(name, bal, code, mins1, mins2); //read in the inputs
+    if (code == 'R') { //for regular 
+        charge = reg_charge(mins1);
+        bal += charge;
+      }
+      else { //for premium 
+        charge = prem_charge(mins1, mins2);
+        bal += charge;
+      }
+     print_bill (acc, name, code, charge, bal);
+      cin >> acc; 
+  }
+    cout << endl;
+    return 0;
+}	
+
+//read in the service type chosen by customer
+void read (string& name, double& bal, char& code, int& mins1, int& mins2) {
+  cin >> name >> bal >> code;
+  if (code == 'R') {
+    cin >> mins1;
+  }
+  else cin >> mins1 >> mins2;
+}   
+
+//Computes charge for regular service accounts
+double reg_charge (int mins){
+  double charge = REG_FIXED_FEE;
+  if (mins <= REG_FREE_MINS)
+    return charge; 
+  else {
+    mins -= REG_FREE_MINS; 
+    for (int i = 0; i < mins; i++)
+    charge += REG_FEE_PER_MIN; 
+    return charge; 
+  }
+}
+
+//Computes charges for premium service accounts
+double prem_charge (int peak_mins, int off_mins) {
+	double charge = PRE_FIXED_FEE;
+  
+  if (peak_mins > PRE_DAY_FREE_MINS) {
+    peak_mins -= PRE_DAY_FREE_MINS;
+     for (int i = 0; i < peak_mins; i++) 
+       charge += PRE_DAY_PER_MIN;
+  }
+
+  if (off_mins > PRE_OFFPEAK_FREE_MINS) {
+     off_mins -= PRE_OFFPEAK_FREE_MINS;
+     for (int i = 0; i < off_mins; i++) 
+       charge += PRE_OFFPEAK_PER_MIN;
+  }
+	return charge;
+}
+
+//print the receipt function
+void print_bill (string acc, string name, char code, double charge, double bal) {
+	cout << fixed << showpoint << setprecision (2);
+  cout << endl << setw(8) << acc << setw(15) << name;
+
+    if (code == 'R') 
+      cout << setw(11) << "Regular";
+    else 
+      cout << setw(11) << "Premium";
+
+    cout << setw(10) << charge << setw(10) << bal;
+  
+}
