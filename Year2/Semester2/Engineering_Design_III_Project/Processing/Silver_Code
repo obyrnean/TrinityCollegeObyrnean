@@ -1,0 +1,262 @@
+import controlP5.*; // library contains what is necessary for the GUI (Graphical User Interface)
+//import processing.net.*; // this library is imported to carry out networking with the arduino
+
+//Variables:
+ControlP5 cp5;
+//Client arduino; // declaring an object of the client class to network with the arduino
+String data = "0"; // this will be used to read data written to processing from the arduino
+Slider speedSlider;
+Textlabel objectText;
+String TargetSpeed = "0";
+String TargetDistance = "15";
+int Speed = 0;
+int distance = 0; 
+String ObjectDistance = "0";
+// Define a boolean variable to keep track of which control is currently active
+boolean isSliderVisible = false;
+PImage buggy; //delcare a variable of the type PImage
+int lastUpdateTime = 0; // Variable to store the time of the last update
+boolean isMoving = false; // Variable to track if the buggy is currently moving
+
+
+void setup() {
+  size(1200, 650); // declairing the size of the window
+  cp5 = new ControlP5(this); // Initialize the ControlP5 object
+ // arduino = new Client(this, "192.168.0.111", 80); // Initialize the Arduino Client object with IP address and port(share network connection)
+ // although the arduino in our case creates the server, declaring the arduino using the client from the library allows us to easily listen for incoming data from the arduino.
+  buggy = loadImage("buggy.png");//load image file
+ 
+  // Customize the StartMotor button
+  cp5.addButton("StartMotor")  // creates a new button with the label "StartMotor" using the ControlP5 library's addButton() method and assigns it to the cp5 ControlP5 object.
+     .setValue(0)
+     .setPosition(450, 90) // positions the button in the middle horizontally
+     .setSize(80, 80) // Set the diameter of the circle to 120 pixels
+     .setColorBackground(color(0, 255, 0)) // Set the background color to green
+     .setColorForeground(color(255)) // Set the foreground (stroke) color
+     .setColorActive(color(255, 255, 0)) // Set the active (click) color to yellow (RGB color values: 255 for red, 255 for green, 0 for blue).
+     .setLabel("START") // Set the label of the button
+     .getCaptionLabel().setFont(createFont("Arial Bold", 13)); // Set the font and size of the label
+ 
+ // Customize the StopMotor button
+ cp5.addButton("StopMotor")
+     .setValue(0)
+     .setPosition(600, 90) // positions the button in the middle horizontally
+     .setSize(80, 80) // Set the diameter of the circle to 120 pixels
+     .setColorBackground(color(255, 0, 0)) // Set the background color to red RGB
+     .setColorForeground(color(255)) // Set the foreground (stroke) color
+     .setColorActive(color(255, 255, 0)) // Set the active (click) color of the button to yellow (RGB color values: 255 for red, 255 for green, 0 for blue).
+     .setLabel("STOP") // Set the label of the button
+     .getCaptionLabel().setFont(createFont("Arial Bold", 13)); // Set the font and size of the label
+     
+ //GO/STOP buttons text label
+ cp5.addTextlabel("instructions GO/STOP buttons")
+     .setText("Press to START/STOP motors:")
+     .setPosition(450, 60) // positions the text label
+     .setColorValue(color(0)) // Set the text color
+     .setFont(createFont("Arial", 10)); // Set the font and size of the text
+     
+//Speed Control button 1 (manual control)
+cp5.addButton("SpeedControl1")
+     .setValue(0)
+     .setPosition(380, 230) // positions the button in the middle horizontally
+     .setSize(180, 40)
+     .setColorBackground(color(0))
+     .setColorForeground(color(255))
+     .setColorActive(color(255, 255, 0))
+     .setLabel("Manual Speed Control")
+     .getCaptionLabel().setFont(createFont("Arial Bold", 10));
+   
+    //text label for speed control buttons
+  cp5.addTextlabel("speedControlMessage")
+     .setText("Speed Control buttons:")
+     .setPosition(450, 200) // positions the text label
+     .setColorValue(color(0)) // Set the text color
+     .setFont(createFont("Arial", 10)); // Set the font, size, and weight of the text
+     
+ // Add a slider to select an integer value this is to send the desired speed for control method 1
+speedSlider = cp5.addSlider("SpeedSlider")
+     .setPosition(410, 300) // positions the slider below the manual speed control button
+     .setSize(350, 35) // Set the size of the slider
+     .setRange(0, 42) // Set the range of the slider from 0 to 255 (available speed values)
+     .setValue(0) // Set the initial value of the slider
+     .setColorCaptionLabel(0)
+     .setVisible(false); // Initially hide the slider
+
+//Speed Control button 1 (manual control)
+ cp5.addButton("SpeedControl2")
+     .setValue(0)
+     .setPosition(600, 230)
+     .setSize(180, 40)
+     .setColorBackground(color(0))
+     .setColorForeground(color(255))
+     .setColorActive(color(255, 255, 0))
+     .setLabel("Object Speed")
+     .getCaptionLabel().setFont(createFont("Arial Bold", 10));
+     
+//text shown instead of slider when method 2 pressed
+objectText = cp5.addTextlabel("objectText")
+     .setText("Buggy will follow object when encountered!")
+     .setPosition(470, 300) // positions the text label
+     .setColorValue(color(0)) // Set the text color
+     .setFont(createFont("Arial", 11)) // Set the font, size, and weight of the text
+     .setVisible(false); // Initially hide the text
+     
+//clear button customization for distance travelled
+//cp5.addButton("ClearButton") //button to clear distance travelled
+//     .setValue(0)
+//     .setPosition(10, 633)
+//     .setSize(80, 30)
+//     .setColorBackground(color(200))
+//     .setColorForeground(color(0))
+//     .setColorActive(color(200))
+//     .setLabel("CLEAR")
+//     .getCaptionLabel().setFont(createFont("Arial Bold", 15));
+     
+}
+
+
+
+void draw() {
+  background(255);
+  int sliderValue = (int)speedSlider.getValue();
+  
+ if (isMoving) {
+    // Calculate the elapsed time since the last update
+    int currentTime = millis();
+    int elapsedTime = currentTime - lastUpdateTime;
+  
+    // If 6 seconds (6000 milliseconds) have passed, increment the distance by 1
+    if (elapsedTime >= 60) {
+      distance += 5;
+      lastUpdateTime = currentTime; // Update the last update time
+    }
+  }
+  
+  //next lines define the color of the slider depending on value entered
+  if (sliderValue >= 0 && sliderValue < 15.87) {
+    speedSlider.setColorForeground(lerpColor(color(255, 255, 204), color(255, 204, 102), map(sliderValue, 0, 85, 0, 1)));
+   // speedSlider.setColorBackground(lerpColor(color(255, 255, 204), color(255, 204, 102), map(sliderValue, 0, 85, 0, 1)));
+    speedSlider.setColorActive(lerpColor(color(255, 255, 204), color(255, 204, 102), map(sliderValue, 0, 85, 0, 1)));
+  } else if (sliderValue >= 15.87 && sliderValue < 31.74) {
+    speedSlider.setColorForeground(lerpColor(color(255, 204, 102), color(255, 153, 0), map(sliderValue, 85, 170, 0, 1)));
+  //  speedSlider.setColorBackground(lerpColor(color(255, 204, 102), color(255, 153, 0), map(sliderValue, 85, 170, 0, 1)));
+    speedSlider.setColorActive(lerpColor(color(255, 204, 102), color(255, 153, 0), map(sliderValue, 85, 170, 0, 1)));
+  } else if (sliderValue >= 31.74 && sliderValue <= 42) {
+    speedSlider.setColorForeground(lerpColor(color(255, 153, 0), color(255, 51, 51), map(sliderValue, 170, 255, 0, 1)));
+  //  speedSlider.setColorBackground(lerpColor(color(255, 153, 0), color(255, 51, 51), map(sliderValue, 170, 255, 0, 1)));
+    speedSlider.setColorActive(lerpColor(color(255, 153, 0), color(255, 51, 51), map(sliderValue, 170, 255, 0, 1)));
+  }
+ 
+  // Draw horizontal linea
+  stroke(0); // Set stroke color to black
+  strokeWeight(1); // Set the thickness of the line
+  line(0, 355, 1200, 355); // Draw a horizontal line
+  line(0, 435, 1200, 435); // Draw another horizontal line
+ 
+  //Travelled distance following line with implemented buggy picture
+  if (float(distance) <= 500) {
+  // Calculate the position of the end of the line based on the traveled distance
+  float lineEndX = map(float(distance)/7, 0, 100, width, 100);
+  // Draw the line representing the traveled distance
+  stroke(0); // Set stroke color to black
+  strokeWeight(5); // Set the thickness of the line
+  line(lineEndX, 395, width, 395); // Draw a line from (lineEndX, 650) to the right side of the window
+  image(buggy, lineEndX - 50, 368);
+}
+  else {
+  // Calculate the position of the end of the line based on the traveled distance
+  float lineEndX = map(float(500)/7, 0, 100, width, 100);
+  // Draw the line representing the traveled distance
+  stroke(0); // Set stroke color to black
+  strokeWeight(5); // Set the thickness of the line
+  line(lineEndX, 395, width, 395); // Draw a line from (lineEndX, 650) to the right side of the window
+  image(buggy, lineEndX - 50, 368);
+}
+ 
+ 
+  // Display traveled distance
+  fill(0); // Set text fill color to black
+  textAlign(LEFT); // Align text to the left
+  textSize(15); // Set text size
+  text("Group: Y12", 30, 30);
+  text("Buggys travelled distance: " + distance + " cm", 50, 400); // Display traveled distance
+  text("Buggys target speed: " + TargetSpeed + " m/s", 50, 500); // Display target speed
+  text("Buggys current speed: " + Speed + " m/s", 500, 500); //Display current speed
+  text("Buggys target distance: " + TargetDistance + " cm", 50, 550); //Display target distance regarding object
+  text("Buggys object distance: " + ObjectDistance + " cm", 500, 550); //Display current speed
+
+  // Call draw method of ControlP5 to update the appearance of the slider
+  cp5.draw();
+ 
+  // Display received data
+//  if (arduino != null && arduino.available() > 0) { // checks if there is data available from the arduino
+ // data = arduino.readString(); // reads the data from arduino
+  println(data); // this pirnts the incoming data to our serial monitor on processing
+  delay(500);
+//}
+}
+
+public void StartMotor(int theValue) { // function to tell the arduino to start the motors
+ // if (arduino != null && arduino.active()) { // checks arduino is active
+  //  arduino.write("g"); // writes the character g to arduino to be processed accordingly
+    println("Start Motor button pressed!"); // this prints to our serial monitor to allow us to confirm the button is clicked successfully
+    isMoving = true; // Set the flag to indicate the buggy is moving
+ // }
+}
+
+public void StopMotor(int theValue) {
+ // if (arduino != null && arduino.active()) { // checks if active similar to start
+ //   arduino.write("s"); // writes character s to the arduino to inidcate to stop.
+    println("Stop Motor button pressed!"); // alerts us that the button was successfully pressed.
+    isMoving = false; // Set the flag to indicate the buggy has stopped
+ // }
+}
+
+// Define the SpeedControl1 button callback function
+public void SpeedControl1(int theValue) {
+ // if (arduino != null && arduino.active()) {
+  //  arduino.write("f"); // Send the character 'f' to the Arduino
+    println("Speed Control 1 button pressed!"); // Print to the serial monitor
+   
+   // Always show the slider when SpeedControl1 is pressed
+   speedSlider.setVisible(true);
+   objectText.setVisible(false); // Hide the text label
+ 
+   // Update the visibility flag
+   isSliderVisible = true;
+     
+  //  boolean isVisible = !speedSlider.isVisible(); // Toggle the visibility of the slider
+  //  speedSlider.setVisible(isVisible); // Set the visibility of the slider
+  //  objectText.setVisible(!isVisible); // Set the visibility of the objectText label opposite to the slider
+ // }
+}
+
+
+// send the wanted speed value to the arduino
+public void SpeedSlider(int theValue) {
+ // if (arduino != null && arduino.active()) {
+    String stringValue = String.valueOf(theValue); // Convert integer value to string
+  //  arduino.write(stringValue); // Send the string representation of the integer value to the Arduino
+    TargetSpeed = stringValue;
+    println("Speed value set to: " + stringValue); // Print to the serial monitor
+ // }
+}
+
+public void SpeedControl2(int theValue) {
+//  if (arduino != null && arduino.active()) {
+  //  arduino.write("k"); // Send the character 'f' to the Arduino
+    println("Speed Control 2 button pressed!"); // Print to the serial monitor
+   
+    // Always show the text label when SpeedControl2 is pressed
+    speedSlider.setVisible(false); // Hide the slider
+    objectText.setVisible(true);
+ 
+    // Update the visibility flag
+    isSliderVisible = false;
+ // }
+}
+
+//public void ClearButton(int theValue) {
+//  //data = "0"; // Reset the distance travelled to 0
+//  println("Distance travelled reset to 0.");
+//}
