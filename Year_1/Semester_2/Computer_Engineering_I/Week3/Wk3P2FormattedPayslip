@@ -1,0 +1,68 @@
+/**
+* Week 3 - Finding Net Pay
+*
+* Task 2 - Formatted output
+*
+* Copy the body of your solution to task 1 in here. Then arrange to
+* (1) read a multipart name from the rest of the line of input e.g. given input "35 15 0 Michael McConnell" the name is "Michael McConnell".
+* (2) format output, using fixed, showpoint, setprecision, setw, left, right, etc. to produce output exactly like this, 30 characters per line:
+Name         Michael McConnell
+Hours                    35.00
+Hourly rate              15.00
+Gross wage              525.00
+Tax @ 20%               105.00
+PRSI @ 2.5%              13.12
+------------------------------
+Net pay                 406.88
+*
+*/
+
+#include <string>
+#include <iostream>
+#include <iomanip>
+using namespace std;
+
+int main()
+{  
+  const double BASIC_HOURS = 35;//hours above this is overtime
+	const double OTIME_MULT = 1.5;//the multiplier for overtime hours
+	const double TAX_RATE = 0.20;//all pay is taxed at 20%
+	const double PRSI_RATE = 0.025;//PRSI is 2.5% of gross pay
+
+	double hours, hourly_rate, tax_credit, gross_pay, tax, prsi, net_pay;
+  string name;
+
+  cout << "Enter hours, hourly rate, tax credit, name:";
+  cin >> hours >> hourly_rate >> tax_credit;
+  getline (cin,name);
+  cout << endl;
+
+  if (hours > BASIC_HOURS)
+    gross_pay = (hours - BASIC_HOURS) * (hourly_rate * OTIME_MULT) + (BASIC_HOURS * hourly_rate);
+  else 
+    gross_pay = hours * hourly_rate;
+
+	if (tax_credit > (gross_pay * TAX_RATE))
+    tax = 0;
+  else
+    tax = (gross_pay * TAX_RATE) - tax_credit;
+
+    prsi = gross_pay * PRSI_RATE;
+
+    net_pay = gross_pay - tax - prsi; 
+
+cout << fixed << showpoint << setprecision(2);
+  
+  cout << left << setw(4) << "Name" << setw(26) << right << name << endl;
+  cout << left << setw(5) << "Hours" << setw(25) << right << hours << endl;
+  cout << left << setw(11) << "Hourly rate" << setw(19) << right << hourly_rate << endl;
+  cout << left << setw(10) << "Gross wage" << setw(20) << right << gross_pay << endl;
+  cout << left << setw(9) << "Tax @ 20%" << setw(21) << right << tax << endl;
+  cout << left << setw(11) << "PRSI @ 2.5%" << setw(19) << right << prsi << endl;
+  
+  cout << left << setw(30) << setfill('-') << "-" << endl;
+
+  cout << left << setfill (' ') << setw(7) << "Net pay" << setw(23) << right << net_pay << endl;
+  
+	return 0;
+  }
