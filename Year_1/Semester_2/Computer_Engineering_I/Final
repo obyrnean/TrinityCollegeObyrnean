@@ -1,0 +1,351 @@
+/* FINAL TEST 2023 TEMPLATE */
+/* Anonymise and merge clincial data */
+//https://replit.com/@1E32023/FinalTest-obyrnean#main.cpp
+#include <cmath>
+#include <iostream>
+#include <iomanip>
+using namespace std;
+void read_patients (int n, string MRN[], int Dage[], int DoD[], int capacity);
+//Reads n patient records into the three parallel arrays; converts diagnosis date to daynumber form immediately for storage. The position in 
+the MRN array becomes the StudyId for anonymised output (e.g. if F101 goes in slot 0 then F101 becomes StudyId 0 for output). Reads, but 
+ignores, any records beyond capacity
+int search (string s, const string a[], int size); //returns the (first) slot in array a containing s, or -1 if it is not found
+int daynumber (int day, int month, int year); //returns the daynumber corresponding to the date, where 1/1/1900 is daynumber 1
+double PCC (const int x[], const int y[], int size); 
+ 
+//returns the Pearson correlation coefficient between values in array x and values in array y
+double covariance (const int x[], const int y[], int size);
+double mean(const int array[], int size);
+double variance(const int array[], int size);
+double std_dev (const int array[], int size);
+int month_length (int m, int y);
+int year_length (int y);
+bool leap_year (int year);
+int daynumber (int day, int month, int year);
+//print out the final output for each patient
+void printOut (string MRN[], int AgeAtDiagnosis[], int DiagnosisDate, string event_type[]);
+int main()
+{
+ 
+//for inputting patient data
+ 
+const int MAX_PATIENTS = 50;
+ 
+//arrays for patient data
+ 
+string MRN [MAX_PATIENTS];//Medical Record Numbers
+ 
+int AgeAtDiagnosis [MAX_PATIENTS]; //age as entered
+ 
+int DiagnosisDate [MAX_PATIENTS]; //daynumber for diagnosis date, computed from date entered
+ //for inputting event data
+ 
+const int MAX_EVENTS = 1000;
+ 
+//arrays for event data
+ 
+int StudyId [MAX_EVENTS];//contains the position of the patient's data in the patient arrays, i.e. resutls of searching for MRN in the 
+MRN array
+ 
+string event_type [MAX_EVENTS];
+ 
+int daysToEvent [MAX_EVENTS];
+ //ADVANCED TASK -- FOR DATA ON DEATHS
+ //For the template initialise these two arrays to the values for the sample input so PCC works for that input
+ 
+//Declare two parallel arrays containing age and days to event, for death events only;
+ int num_deaths = 0; //for the hardcoded data in the arrays provided. Will need to be changed.
+ 
+ //... depending on how you organise input, somewhere you will need to get data for death events in to those two arrays
+ // END ADVANCED TASK SET UP
+ 
+int num_patients;
+ //start reading in patient data
+ //NB this is done for you; no need to worry about it
+ 
+cin >> num_patients;
+ 
+read_patients (num_patients, MRN, AgeAtDiagnosis, DiagnosisDate, MAX_PATIENTS);
+ 
+ 
+//header for output; use the same setw settings for outputting data
+ cout << setw(8) << "StudyID" << setw(8) << "DiagAge"; 
+ 
+cout << setw(12) << "DaysToEvent" << setw (15) << "Type of Event" << endl;
+ string patient_code; 
+ cin >> patient_code; 
+ while (patient_code != "X00") {
+ int patient = search(patient_code, MRN, MAX_PATIENTS);
+ 
+if (patient != -1) {
+ 
+string event, day, month, year; 
+ 
+cin >> event >> day >> month >> year;
+ 
+int daynum; 
+ 
+daynum = daynumber(day, month, year); 
+ 
+int MRN;
+ 
+MRN = search(patient, MRN, MAX_PATIENTS);
+ 
+ 
+printOut(MRN, AgeAtDiagnosis, DiagnosisDate, event_type); 
+ 
+ 
+}
+ 
+else //ignore? 
+
+ 
+cin >> patient_code; }
+ //***********
+ //START HERE
+ //**********
+ //In a loop read each event, process each event, print each event
+ //**Or** (more advanced) read all events into a series of arrays, process, then print all events
+ //...
+ //...
+ //.... If an event refers to an unknown patient ...
+ // 
+be sure to ignore it.
+ 
+ 
+ cout << "END of EVENTS.\n\n";
+ 
+ // Advanced Task section *****
+ // Once necessary data about all death events is captured in two arrays
+ // if there are any deaths 
+ // call PCC function with the appropriate parameters
+ if (num_deaths > 0) {
+ 
+double pcc = 0;//initialised in case you don't get around to calling PCC
+ //... 
+ 
+pcc = PCC (...);
+ 
+cout << "Pearson Correlation Coefficient between age at diagnosis and days to death \t" << pcc << endl;
+ }
+ else cout << "No deaths to report.\n";
+ // END of Advanced Task section ******
+ 
+ return 0;
+}
+//print out the final output for each patient
+void printOut (string MRN[], int AgeAtDiagnosis[], int DiagnosisDate, string event_type[]) {
+ cout << right << setw(7) << MRN << setw(8) << age << setw(12) << daynum << setw(15) << event_type << endl; 
+}
+////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//******* Don't touch functions below here ******//
+//////////////////////////////////////////////////
+// Reads patient records into 4 parallel arrays
+void read_patients (int n, string MRN[], int Dage[], int DoD[], int capacity) {
+//Reads n patient records; converts diagnosis date to daynumber form immediately for storage;
+//The position in this array becomesthe StudyId for anonymised output.
+//To avoid overflowing the array, but to read through all the records, we read, but ditch, the extra records 
+ 
+string mrn;
+ 
+int age;
+ 
+int d, m, y;
+ 
+for (int studyid=0; studyid<n; studyid++) {
+ 
+cin >> mrn >> age >> d >> m >> y;
+ 
+if (n < capacity) {
+ 
+//store data
+ 
+MRN[studyid] = mrn;
+ 
+Dage[studyid] = age;//age at diagnosis
+ 
+DoD[studyid] = daynumber (d, m, y);//date of diagnosis
+ 
+} 
+ 
+else {
+ 
+cout << "OVERFLOW: " << MRN << " record ignored.\n";
+ 
+}
+ 
+}
+}
+//*********************************//
+// 
+search function 
+//
+//*********************************//
+int search (string s, const string a[], int size) {
+//returns the position of s in sarray or -1 if not found
+ 
+for (int i=0; i < size; i++) {
+ 
+if (a[i] == s) {
+ 
+return i;
+ 
+}
+ 
+}
+ 
+//if we get here we didn't find s in the array
+ 
+return -1;
+}
+//Don't touch statictics functions below here
+//**************************************//
+// 
+Statistics functions 
+//
+//**************************************//
+double PCC (const int x[], const int y[], int size) { 
+ 
+//returns the Pearson correlation coefficient between values in x and values in y
+
+ 
+return (covariance (x, y, size) / (std_dev (x, size) * std_dev(y, size)));
+}
+double covariance (const int x[], const int y[], int size) {
+ 
+double sum = 0;
+ 
+double x_mean = mean (x, size);
+ 
+double y_mean = mean (y, size);
+ 
+for (int i=0; i<size; i++) {
+ 
+sum = sum + (x[i] - x_mean)*(y[i] - y_mean);
+ 
+}
+ 
+return sum / (size-1);
+}
+double mean(const int array[], const int size)
+{
+ 
+double result = 0.0;
+ 
+double total = 0.0;
+ 
+for(int i=0; i<size; i++)
+ 
+{
+ 
+total = total + array[i];
+ 
+}
+ 
+result = total/size;
+ 
+return result;
+}
+double variance(const int array[], int size)
+{
+ 
+double total = 0.0;
+ 
+double term, term_squared;
+ //NB It would be perverse not to use the mean function here
+ 
+double mean_value = mean(array, size);
+ 
+for(int i=0; i<size; i++)
+ 
+{
+ 
+term = array[i] - mean_value;
+ 
+term_squared = term * term;
+ 
+total = total + term_squared; 
+ 
+}
+ 
+return total/(size-1);
+}
+double std_dev (const int array[], int size) {
+ 
+return sqrt (variance (array, size));
+}
+//don't touch date related functions below here
+//**************************************//
+// 
+date functions 
+//
+//**************************************//
+int daynumber (int day, int month, int year) {
+ 
+int y, m, daynumber;
+ 
+daynumber = 0;
+ 
+for (y = 1900; y < year; y++)
+ 
+daynumber = daynumber + year_length (y);
+ 
+for (m = 1; m < month; m++)
+ 
+daynumber = daynumber + month_length(m, year);
+ 
+daynumber = daynumber + day;
+ 
+return daynumber;
+}
+int month_length (int m, int y) {
+ 
+if (m==2) 
+ 
+if (leap_year(y)) return 29;
+ 
+else return 28;
+ 
+else if (m==9 || m==4 || m==6 || m==11)
+ 
+//sept, april, june or november
+ 
+return 30;
+ 
+else return 31;
+}
+int year_length (int y) {
+ 
+if (leap_year (y)) 
+ 
+return 366;
+ 
+else return 365;
+ 
+}
+ 
+bool leap_year (int year) {
+//returns true if year is a leap year
+ 
+if (year % 4 == 0) //all others are definitely not leap
+ 
+if (year < 1583) return true;
+ 
+else //after 1583
+ 
+if ((year % 100 == 0) && (year % 400 != 0))
+ 
+//e.g. 1900
+ 
+return false;
+ 
+else //e.g. 1904 or 2000
+ 
+return true;
+
+ 
+else //not divisible by 4
+ 
+return false;
+}
