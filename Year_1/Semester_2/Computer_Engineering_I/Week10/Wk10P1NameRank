@@ -1,0 +1,75 @@
+//Week 10 P1 name rank
+#include <iostream>
+#include <string>
+using namespace std;
+
+const int NUM_NAMES = 10;
+
+int search (string s, const string sarray[], int size);
+//returns the position of s in sarray or -1 if not found
+
+int main () {
+    string girls [NUM_NAMES] = {"Grace", "Fiadh", "Emily", "Sophie", "Ava", "Amelia", "Ella", "Hannah", "Lucy", "Alex"};
+    string boys [NUM_NAMES] = {"Jack", "James", "Noah", "Daniel", "Conor", "Finn", "Liam", "Fionn", "Alex", "Charlie"};
+    //source https://www.independent.ie/news/revealed-irelands-top-baby-names-in-2020-40134889.html
+    //adapted by insertion of Alex in each list to test corect logic where a name appears on both lists
+    
+   string test_name, endSearch;
+   const string sentinel = "No";
+   int girl_rank, boy_rank; 
+
+  cout << "Enter a name to search for:";
+  cin >> test_name; 
+
+  girl_rank = search(test_name, girls, NUM_NAMES);
+  boy_rank = search(test_name, boys, NUM_NAMES);
+
+  if (girl_rank != -1) {
+    cout << test_name << " is ranked " << girl_rank << " in top girls name.\n";
+  }
+
+   if (boy_rank != -1) {
+     cout << test_name << " is ranked " << boy_rank << " in top boys name.\n";
+   }
+
+  else if ((girl_rank == -1)&&(boy_rank == -1)) {
+     cout << test_name << " is not in the top " << NUM_NAMES << " for girls or boys.\n";
+  }
+
+  cout << "Look up the rank of another name? Enter No to end:";
+  cin >> endSearch;
+  
+  while (endSearch != sentinel) {
+      cout << "Enter a name to search for:";
+  cin >> test_name; 
+
+  girl_rank = search(test_name, girls, NUM_NAMES);
+  boy_rank = search(test_name, boys, NUM_NAMES);
+
+  if (girl_rank != -1) {
+    cout << test_name << " is ranked " << girl_rank << " in top girls name.\n";
+  }
+
+   if (boy_rank != -1) {
+     cout << test_name << " is ranked " << boy_rank << " in top boys name.\n";
+   }
+
+  else if ((girl_rank == -1)&&(boy_rank == -1))  {
+     cout << test_name << " is not in the top " << NUM_NAMES << " for girls or boys.\n";
+  }
+
+  cout << "Look up the rank of another name? Enter No to end:";
+  cin >> endSearch;
+  
+	}   
+    return 0;
+}
+
+int search (string s, const string sarray[], int size) {
+    for (int i=0; i < size; i++) {
+        if (sarray[i] == s) {
+            return i + 1;
+        }
+    }
+    return -1;
+}
