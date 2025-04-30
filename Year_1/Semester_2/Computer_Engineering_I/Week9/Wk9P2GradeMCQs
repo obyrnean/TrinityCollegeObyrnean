@@ -1,0 +1,57 @@
+#include <iostream>
+using namespace std;
+
+// declare a read function that reads size chars into array a ...
+void readAnswers (char& answer);
+//declare a score function that takes two arrays of chars, correct answers and student answers, and their size, and returns the score ...
+int scorePoints (char solution[], char answers[]);
+
+int main ()
+{
+    const int MCQsize = 20;
+    int studentID, scored_points;
+    int grade, i, j;
+    char solution[MCQsize], answers[MCQsize];
+        
+    //read the model/correct answers
+  for (int i = 0; i < MCQsize; i++) {
+    readAnswers(solution[i]);
+  }
+    //read the first student id
+    cin >> studentID;
+    scored_points= 0;
+  
+   while (studentID >= 0) {
+    //read, score and report each student's answers
+    for (int i = 0; i < MCQsize; i++) {
+     readAnswers(answers[i]); }
+
+    for (int i = 0; i < MCQsize; i++) {
+    scored_points += scorePoints(solution, answers); 
+    }
+     
+     cout << studentID << ": " << scored_points << endl; 
+     cin >> studentID;
+     }
+  
+    return 0;
+}
+
+void readAnswers (char& answer) { 
+   cin >> answer;  
+}
+
+int scorePoints (char solution[], char answers[]) {
+  int scored_points, i;
+  if (answers[i] == solution[i]) {
+    scored_points += 2; 
+  }
+  else if (answers[i] == 'x') {
+   scored_points += 0; 
+  }
+    
+  else if (answers[i] != solution [i]) {
+    scored_points -= 1; 
+  } 
+  return scored_points; 
+}
