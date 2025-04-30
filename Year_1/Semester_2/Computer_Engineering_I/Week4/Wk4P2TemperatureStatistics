@@ -1,0 +1,51 @@
+//Compute statistics for temperature data - see lab sheet
+//Sample Input:DUBAIRPORT 10.5 6.5 5.0 -3.5 -4.0 7.5 3.0 -999
+//Output:DUBAIRPORT -4.0 10.5 3.6
+#include <iostream>
+#include <string>
+#include <iomanip>
+using namespace std;
+
+int main () 
+{
+  double temperature;
+  string stationName;
+  
+  //cout << "Weather Station Name: ";
+  cin >> stationName; 
+  
+  //cout << "Temperature reading: ";
+  cin >> temperature;
+  
+  double sum = 0;
+  double counter = 0;
+  double min = 200; //highest temperature ever recorded
+  double max = -200; //lowest temperature ever recorded
+
+  cout << fixed << setprecision (1);
+  
+while (temperature != -999)
+    {
+    sum = sum + temperature;
+      if (temperature < min) {
+        min = temperature; }
+      if (temperature > max) {
+        max = temperature; }
+      cin >> temperature;
+    counter++;
+    }
+  
+if (counter == 0) {
+  cout << stationName << " NO DATA" << endl;
+  }
+else
+ {
+   //cout << "Station: " << stationName << endl;
+   //cout << "Min Temperature: " << min << endl;
+   //cout << "Max Temperature: " << max << endl;
+   //cout << "Average Temperature: " << sum/counter << endl;
+   cout << stationName << " " << min << " " << max << " " << sum/counter;
+}
+
+   return 0;
+}
