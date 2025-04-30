@@ -1,0 +1,96 @@
+//Repeating payroll program using 3 functions - the third one handles output
+//input starts with the number of payroll records to be processed
+#include <string>
+#include <iostream>
+#include <iomanip>
+using namespace std;
+// constants can be safely declared outside any function
+const double BASIC_HOURS = 35;//hours above this is overtime
+const double OTIME_MULT = 1.5;//the multiplier for overtime hours
+const double TAX_RATE = 0.20;//all pay is taxed at 20%
+const double PRSI_RATE = 0.025;//PRSI is 2.5% of gross pay
+
+double calculate_pay (double hrs, double rate);
+
+double calculate_tax (double pay, double credit);
+
+void print_details (string name, double hours, double hourly_rate, double gross_pay, double tax, double prsi);
+
+int main()
+{
+	//Declare the numeric variables as doubles (decimal numbers)
+	int numRecords;
+  double hours, hourly_rate, credit;
+	double gross_pay, tax,  prsi, net_pay;
+	string name;
+
+  cin >> numRecords;
+  for (int i = 1; i <= numRecords; i++) {
+	
+	cin >> hours >> hourly_rate >> credit;
+	getline(cin, name);
+
+	gross_pay = calculate_pay (hours, hourly_rate);
+
+	//Calculate the deductions
+	tax = calculate_tax (gross_pay, credit);
+
+	prsi = gross_pay * PRSI_RATE;
+
+  //Print details
+  //Let the pritning function compute the net pay
+  print_details (name, hours, hourly_rate, gross_pay, tax, prsi);
+	
+  } // end for
+	return 0;
+}
+
+
+//Calculate the gross pay
+double calculate_pay (double hrs, double rate) {
+	//handle overtime (more than 35 hours was worked)
+	if (hrs > BASIC_HOURS)  
+	{
+		double overtime = (hrs-BASIC_HOURS)*(OTIME_MULT*rate);
+		return ((BASIC_HOURS*rate) + overtime);
+	}
+	else
+	{
+		return (hrs*rate);
+	}
+}
+
+//calculate tax
+double calculate_tax (double pay, double credit) {
+	double tax = pay * TAX_RATE;
+
+	//apply the tax credit
+	tax = tax - credit;
+
+	//ensure tax is a postive number 
+	if(tax < 0)
+	{
+		//otherwise set it to zero
+		tax = 0;
+	}
+  return tax;
+}
+
+//Print payslip
+void print_details (string name, double hours, double hourly_rate, double gross_pay, double tax, double prsi) {
+//Set the number of fraction digits for output to two
+	cout << fixed << showpoint << setprecision(2) << endl;
+
+	//Print out the details, 30 characters per line
+	cout << left << setw(5) << "Name" << right << setw(25) << name << endl;
+	cout << left << setw(15) << "Hours" 	<< right << setw(15) << hours << endl;
+	cout << left << setw(15) << "Hourly rate" << right << setw(15) << hourly_rate << endl;
+	cout << left << setw(15) << "Gross wage" << right << setw(15) << gross_pay << endl;
+	cout << left << setw(15) << "Tax @ 20%" << right << setw(15) << tax << endl;
+	cout << left << setw(15) << "PRSI @ 2.5%" << right << setw(15) << prsi << endl;
+	cout << "------------------------------" << endl;
+  //calculate net_pay
+	 double net_pay = gross_pay - tax - prsi;
+	cout << left << setw(15) << "Net pay" 	<< right << setw(15) << net_pay << endl;
+  // Nothing returned
+}
