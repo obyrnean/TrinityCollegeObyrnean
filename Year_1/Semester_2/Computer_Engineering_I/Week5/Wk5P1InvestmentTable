@@ -1,0 +1,42 @@
+/* Investment Table */
+#include <iostream>
+#include <iomanip> //for io manipulation//
+#include <cmath> //for the pow function//
+
+using namespace std;
+
+int main() {
+    const int YEAR_MIN = 5;
+    const int YEAR_MAX = 30;
+    const int YEAR_INCR = 5;
+    
+    int year;
+    double rate, balance;
+    double initial_balance;
+
+    cout << "Enter initial investment amount:";
+    cin >> initial_balance;
+  
+    cout << right << setw(10) << "Rate";
+    for (year = YEAR_MIN; year <= YEAR_MAX; year = year + YEAR_INCR)
+     {
+       cout << setw(4) << year << " years";
+     }
+  
+     cout << "\n";
+  
+     cout << fixed << setprecision (2);
+  
+     for (rate = 5.00; rate <= 10.00; rate = rate + 0.5)
+       {
+         cout << right << setw(10) << rate << setw(10);
+         for (year = YEAR_MIN; year <= YEAR_MAX; year = year + YEAR_INCR)
+           {
+             balance = initial_balance * pow(1+rate/100, year);
+             cout << setw(10) << balance;
+             }
+         cout << endl;
+       }
+
+    return 0;
+}
