@@ -1,0 +1,53 @@
+import controlP5.*; // library contains what is necessary for the GUI (Graphical User Interface)
+//import processing.net.*; // this library is imported to carry out networking with the arduino
+
+ControlP5 cp5;
+//Client arduino; // declaring an object of the client class to network with the arduino
+String data; // this will be used to read data written to processing from the arduino 
+
+void setup() {
+  size(400, 200); // declairing the size of the window
+  cp5 = new ControlP5(this); // Initialize the ControlP5 object
+//  arduino = new Client(this, "192.168.0.182", 80); // Initialize the Arduino Client object with IP address and port(share network connection)
+  // although the arduino in our case creates the server, declaring the arduino using the client from the library allows us to easily listen for incoming data from the arduino.
+  
+  // Customize the StartMotor button
+  cp5.addButton("StartMotor")  // creates a new button with the label "StartMotor" using the ControlP5 library's addButton() method and assigns it to the cp5 ControlP5 object.
+     .setValue(0)
+     .setPosition(100, 20) // simply sets the position of the button
+     .setSize(200, 50) // Set the size of the button to 200x50 pixels
+     .setColorBackground(color(0, 255, 0)) // Set the background color to green
+     .setColorForeground(color(255)) // Set the foreground (text) color
+     .setColorActive(color(255, 255, 0)); // Set the active (click) color to yellow
+  
+  // Customize the StopMotor button
+  cp5.addButton("StopMotor")
+     .setValue(0)
+     .setPosition(100, 100)
+     .setSize(200, 50) // Set the size of the button to 200x50 pixels
+     .setColorBackground(color(255, 0, 0)) // Set the background color to red RGB
+     .setColorForeground(color(255)) // Set the foreground (text) color
+     .setColorActive(color(255, 255, 0)); // SThis line sets the active (click) color of the button to yellow (RGB color values: 255 for red, 255 for green, 0 for blue).
+}
+
+void draw() {
+  background(255); // Clear the background
+  
+  // Display received data
+ // if (arduino != null && arduino.available() > 0) { // checks if there is data available from the arduino
+ // data = arduino.readString(); // reads the data from arduino
+  println(data); // this pirnts the incoming data to our serial monitor on processing
+  delay(5000);
+  
+// if (arduino != null && arduino.active()) { // checks arduino is active
+ //   arduino.write("g"); // writes the character g to arduino to be processed accordingly
+    println("Start Motor button pressed!"); // this prints to our serial monitor to allow us to confirm the button is clicked successfully 
+ // }
+}
+
+public void StopMotor(int theValue) {
+ // if (arduino != null && arduino.active()) { // checks if active similar to start 
+  //  arduino.write("s"); // writes character s to the arduino to inidcate to stop. 
+    println("Stop Motor button pressed!"); // alerts us that the button was successfully pressed.
+ // }
+}
