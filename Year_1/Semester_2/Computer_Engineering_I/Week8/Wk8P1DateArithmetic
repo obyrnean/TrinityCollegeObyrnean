@@ -1,0 +1,155 @@
+//Week 8
+#include <iostream>
+using namespace std;
+
+int month_length (int m, int y);
+int year_length (int y);
+bool leap_year (int year);
+int daynumber (int day, int month, int year);
+
+void dayMthYr (int daynum, int& day, int& month, int& year);
+
+void calc_date (char sign, int value, char period, int& daynum, int day, int month, int year);
+
+
+int main ()
+{
+   int number, day, month, year, d,m,y;
+   int choice;
+
+   cout << "Enter 1 to test date conversion; enter 2 to calculate a new date:";
+   cin >> choice;
+   if (choice == 1) { //test date conversion
+    cout << "Enter d, m, y: ";
+    cin >> d >> m >> y;
+    number = daynumber (d,m,y);
+    cout << "That is daynumber " << number << endl;
+
+    dayMthYr (number, day, month, year);
+     
+    cout << number << " is " << day;
+    cout << "/" << month << "/" << year << endl;
+   }
+     
+   else { //calculate new date
+    cout << "Enter a date to be modified: ";
+    cin >> d >> m >> y;
+    char s,p;
+    int v;   
+    cout << "Enter the sign, value, and period (d/w/y) of the modification: ";
+    cin >> s >> v >> p;
+    //get the number of days 
+    number = daynumber (d,m,y);
+    calc_date(s, v, p, number, d, m, y); //calculate the modification
+
+    dayMthYr (number, day, month, year);
+   
+    cout << "New Date is " << day;
+    cout << "/" << month << "/" << year << endl;
+}
+    return 0;
+}
+
+//determine the days, month and year
+void dayMthYr (int daynum, int& day, int& month, int& year)
+{
+  year = 1900; 
+  month = 1;
+  while (daynum > year_length(year)) {
+    daynum -= year_length(year);
+       year++;
+  }
+
+  while (daynum > month_length(month, year)) {
+    daynum -= month_length (month, year);
+    month++;
+  }
+
+  day = daynum; 
+}
+
+
+//converts a date to a daynumber
+int daynumber (int day, int month, int year)
+{
+    int y, m, daynumber;
+    //accumelate days in all years before the given one
+    daynumber = 0;
+    for (y = 1900; y < year; y++){
+        daynumber = daynumber + year_length (y);
+    }
+    //in the given year, accumulate days in all months before the given month
+    for (m = 1; m < month; m++){
+        daynumber = daynumber + month_length(m, year);
+    }
+    //accumulate all the days in the given month, including the given day
+    daynumber = daynumber + day;
+    return daynumber;
+}
+
+//gives back the number of days in the given month of the given year
+int month_length (int m, int y){
+    if (m==2) 
+        if (leap_year(y))
+	      return 29;
+        else
+		  return 28;
+      
+    else if (m==9 || m==4 || m==6 || m==11)
+        return 30;
+    
+    else
+        return 31;
+}
+
+int year_length (int y){
+    if (leap_year (y)) 
+        return 366;
+
+    else
+        return 365;
+}
+
+bool leap_year (int year){
+    //returns true if year is a leap year
+    if (year % 4 == 0) 
+        if (year < 1583)
+            return true;
+        else 
+            if ((year % 100 == 0) && (year % 400 != 0)) 
+                return false;
+            else 
+                return true;
+
+        else 
+            return false;
+}
+
+//calculates any modifications in the number of days
+void calc_date (char sign, int value, char period, int& daynum, int day, int month, int year) {
+  if (sign == '+') { //if addition
+    if (period == 'w') { //for weeks
+      daynum += value*7;
+    }
+    else if (period == 'y') { //for years
+      year += value;
+      daynum = daynumber(day, month, year);
+    }
+    else if (period == 'd') { //for days
+      daynum += value;
+    }
+  }
+  else if (sign == '-') { //if substraction
+    if (period == 'w') {
+      daynum -= value*7;
+    }
+    else if (period == 'y') {
+      year -= value;
+      daynum = daynumber(day, month, year);
+    }
+    else if (period == 'd') {
+      daynum -= value;
+    }
+  }
+} 
+
