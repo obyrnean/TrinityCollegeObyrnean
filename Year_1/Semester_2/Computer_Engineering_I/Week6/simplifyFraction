@@ -1,0 +1,47 @@
+//take in integers for the top and bottom of a fraction 
+//Usea function to simplify that fraction, e.g. 7/84 -> 1/12
+//use a function to compute gcd
+#include <iostream>
+using namespace std;
+
+void simplify (int& n, int& d);//updates the values in its parameters
+
+int gcd (int i, int j);//normal function, gets *values*, returns a value.
+
+int main() {
+  int numerator, denominator;
+  // read in the numerator and denominator
+  cin >> numerator >> denominator;
+    
+  // simplify the fraction represented
+  simplify (numerator, denominator);
+    
+  // output the result
+  cout << "That's " << numerator << "/" << denominator << ".\n";
+  
+  return 0;
+}
+
+void simplify (int& n, int& d) {
+  int g = gcd (n, d);
+  n = n/g;
+  d = d/g;
+}
+
+int gcd (int i, int j) {
+  //brute force algorithm - Euclid's method is much more efficient!
+	//assumes a and b are positive
+  //look for the biggest integer that divides into both i and j
+  int g; //g will eventually be the greatest common divisor
+  //start at the smaller of i and j;
+  if (i<j) g = i; 
+  else g = j;
+
+  //work from there back towards 1 till you find a common factor
+  while (!((((i%g)==0) && (j%g)==0)))
+      //g is not a factor of both i and j; try the next option
+      g--;
+
+  //now g is a factor of both i and j
+  return g;
+}
