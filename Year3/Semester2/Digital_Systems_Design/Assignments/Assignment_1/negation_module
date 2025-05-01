@@ -1,0 +1,17 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// College: Trinity College Dublin
+// Engineer: Ane O'Byrne
+// 
+// Create Date: 18.02.2025 17:17:57
+// Design Name: Negation Module
+// Module Name: negation_module
+// Project Name: Assignment1
+// Target Devices: Basys3
+// Description: Negation module using 2's complement (inverting bits and adding 1) for -A and -B
+//////////////////////////////////////////////////////////////////////////////////
+
+
+module negation_module(input [5:0] x, output [5:0] negation_x);
+    assign negation_x = ~x + 1;  // 2's complement negation
+endmodule
