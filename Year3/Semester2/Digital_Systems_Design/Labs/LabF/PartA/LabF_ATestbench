@@ -1,0 +1,60 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: Trinity College Dublin
+// Engineer: Ane O'Byrne
+// 
+// Create Date: 11.03.2025 10:29:44
+// Design Name: Kab F Part A Testbench
+// Module Name: LabF_ATestbench
+// Project Name: Testbench for Lab F part A
+// Target Devices: Basys3
+// Description: 
+//
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+
+module LabF_ATestbench();
+    reg clk, reset, d;
+    wire q; // Output from D flip-flop
+
+    // Instantiate the d_ff_reset module
+    d_ff_reset uut (
+        .clk(clk), 
+        .reset(reset), 
+        .d(d), 
+        .q(q)
+    );
+
+    // Generate a 50 MHz clock (20 ns period)
+    initial clk = 1'b0;
+    always #10 clk = ~clk; // Toggle every 10 ns
+
+    // Test values:
+    initial begin
+        // Reset waveform:
+        reset = 1;
+        d = 0;
+        #47 reset = 0; // Go to 0 at 47ns
+        #78 reset = 1; // Go to 1 at 127ns
+        #30 reset = 0; // Go to 0 at 157ns
+    end
+    initial begin
+        // d waveform:
+        #30 d = 1;  // Go to 1 at 30ns
+        #27 d = 0;  // Change D at 57 ns
+        #28 d = 1;  // Change D at 85 ns
+        #100 d = 0;  // Change D at 185 ns
+        
+        #60 $stop;  // End simulation at 240 ns
+    end
+
+    // Monitor the signals
+    initial begin
+        $monitor("Time = %0t | clk = %b | reset = %b | d = %b | q = %b", 
+                 $time, clk, reset, d, q);
+    end
+
+endmodule
