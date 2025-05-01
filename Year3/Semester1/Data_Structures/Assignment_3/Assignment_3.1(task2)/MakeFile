@@ -1,0 +1,64 @@
+###############################
+#        DS_A3 21364333       #
+#   Makefile for Assignment   #
+###############################
+
+# Compiler
+CC = gcc
+CFLAGS = -g -Wall
+
+######################
+#      TARGETS       #
+######################
+
+# Both targets with one command
+all: task2
+
+# Target for task2
+task2: task2.o bstdb.o database.o listdb.o profiler.o
+	@echo "Linking t2_test..."
+	$(CC) $(CFLAGS) -o task2 task2.o bstdb.o database.o listdb.o profiler.o
+
+######################
+#    BUILD RULES     #
+######################
+
+# Compile task2 object
+task2.o: ./src/task2.c ./src/db/database.h ./src/db/profiler.h
+	@echo "Compiling task2.c..."
+	$(CC) $(CFLAGS) -c ./src/task2.c
+
+# Compile database object
+database.o: ./src/db/database.c ./src/bstdb.h ./src/db/database.h ./src/db/listdb.h
+	@echo "Compiling database.c..."
+	$(CC) $(CFLAGS) -c ./src/db/database.c
+
+# Compile bstdb object
+bstdb.o: ./src/bstdb.c ./src/bstdb.h
+	@echo "Compiling bstdb.c..."
+	$(CC) $(CFLAGS) -c ./src/bstdb.c
+
+# Compile listdb object
+listdb.o: ./src/db/listdb.c ./src/db/listdb.h
+	@echo "Compiling listdb.c..."
+	$(CC) $(CFLAGS) -c ./src/db/listdb.c
+
+# Compile profiler object
+profiler.o: ./src/db/profiler.c ./src/db/profiler.h ./src/db/database.h
+	@echo "Compiling profiler.c..."
+	$(CC) $(CFLAGS) -c ./src/db/profiler.c
+
+######################
+#     CLEAN RULES    #
+######################
+
+# Clean up all object files and executables
+clean:
+	@echo "Cleaning up..."
+	rm -f *.o task2
+
+######################
+#    PHONY TARGETS   #
+######################
+
+.PHONY: all clean
