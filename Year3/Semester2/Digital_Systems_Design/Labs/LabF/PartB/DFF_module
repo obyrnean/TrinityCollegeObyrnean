@@ -1,0 +1,69 @@
+`timescale 1ns / 1ps
+
+module DFF_module(
+    input wire clk,                 // Clock input
+    input wire reset,               // Reset input
+    input wire [4:0] push_buttons,  // 5-bit vector for push button inputs
+    output wire [3:0] anode_select, // 4-bit anode selection for 7-segment display
+    output wire [6:0] seven_seg_out // 7-bit LED output for 7-segment display
+    );
+    
+    // Wires for connecting internal signals
+    wire [4:0] debounced_buttons;  // Debounced push buttons output
+    wire dff_output;               // D flip-flop output for the button press logic
+
+    // Instantiate the debouncer module
+    debouncer db0 (
+        .clk(clk), 
+        .reset(reset), 
+        .pb(push_buttons[0]), 
+        .debounced_out(debounced_buttons[0])
+    );
+    
+    debouncer db1 (
+        .clk(clk), 
+        .reset(reset), 
+        .pb(push_buttons[1]), 
+        .debounced_out(debounced_buttons[1])
+    );
+    
+    debouncer db2 (
+        .clk(clk), 
+        .reset(reset), 
+        .pb(push_buttons[2]), 
+        .debounced_out(debounced_buttons[2])
+    );
+    
+    debouncer db3 (
+        .clk(clk), 
+        .reset(reset), 
+        .pb(push_buttons[3]), 
+        .debounced_out(debounced_buttons[3])
+    );
+    
+    debouncer db4 (
+        .clk(clk), 
+        .reset(reset), 
+        .pb(push_buttons[4]), 
+        .debounced_out(debounced_buttons[4])
+    );
+
+    // Instantiate the D flip-flop module
+    d_type_ff dff (
+        .clk(clk),
+        .reset(reset),
+        .d(debounced_buttons[0]), // Example of using one debounced button input
+        .q(dff_output)
+    );
+
+    // Instantiate the 7-segment display controller
+    sevenseg seg (
+        .clk(clk),
+        .reset(reset),
+        .d(dff_output),  // Using the D flip-flop output for display
+        .seven_seg(seven_seg_out),
+        .anode(anode_select)
+    );
+
+    
+endmodule
