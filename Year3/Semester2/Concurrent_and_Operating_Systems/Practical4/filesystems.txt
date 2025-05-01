@@ -1,0 +1,99 @@
+//fd3 = open("f2",w);   ->  P2 : Opens file f2 in write mode (w) and assigns to the descriptor fd3
+ALLOC INODE 1 USED NORMAL 0 1 1 []      // Inode 1 for f2, blocks=0, size =1, links=1
+ALLOC FDESCR 0 USED 2 2 w 0             // File descriptor(ID 2) 0 in write mode (w) at position 0
+
+//fd4 = open("f3",w);  	->  P3 : Opens file f3 in write mode (w) and assigns to the descriptor fd4
+ALLOC INODE 2 USED NORMAL 0 1 1 []      // Inode 2 for f3, size =0, links=1, open=1
+ALLOC FDESCR 1 USED 3 3 w 0             // File descriptor(ID 3) 1 in write mode (w) at position 0
+
+//write(fd3,wbuf2);     ->   P2 : Writes data from wbuf2 to the file of fd3(f2)
+ALLOC BLOCK 0 USED NORMAL 19            // New block0 that stores value 19 from wbuf2
+UPDATE INODE 1 USED NORMAL 1 1 1 [0]    // Inode 1 is updated with blocks=1[0], size=1, links=1
+UPDATE FDESCR 0 USED 2 2 w 1 
+
+//write(fd3,wbuf3);     ->   P2 : Writes data from wbuf3 to the file of fd3(f2)
+ALLOC BLOCK 1 USED NORMAL 23            // New block 1 that stores value 23 from wbuf3
+UPDATE INODE 1 USED NORMAL 2 1 1 [0,1]  // Inode 1 is updated with blocks=2[0,1], size=1, links=1
+UPDATE FDESCR 0 USED 2 2 w 2 
+
+//close(fd3);           ->   P2 : Closes file in fd3 (f2)
+UPDATE FDESCR 0 FREE                    // Close File descriptor 0 (file f2)
+UPDATE INODE 1 USED NORMAL 2 1 0 [0,1] 
+
+//fd1 = open("f1",w);  	->   P1 : Opens file f1 in write mode (w) and assigns to the descriptor fd1
+ALLOC INODE 3 USED NORMAL 0 1 1 []      // Inode 3 for f1, blocks=0, size =1, links=1
+ALLOC FDESCR 0 USED 1 1 w 0             // File descriptor(ID 1) 0 in write mode (w) at position 0
+
+//write(fd4,wbuf1);    	->   P3 : Writes data from wbuf1 to the file of fd4(f3)
+ALLOC BLOCK 2 USED NORMAL 17            // New block2 that stores value 17 from wbuf1
+UPDATE INODE 2 USED NORMAL 1 1 1 [2]    // Inode 2 is updated with blocks=1[2], size=1, links=1
+UPDATE FDESCR 1 USED 3 3 w 1 
+
+//write(fd4,wbuf4);    	->   P3 : Writes data from wbuf4 to the file of fd4(f3)
+ALLOC BLOCK 3 USED NORMAL 29            // New block3 that stores value 29 from wbuf4
+UPDATE INODE 2 USED NORMAL 2 1 1 [2,3]  // Inode 2 is updated with blocks=2[2,3], size=1, links=1
+UPDATE FDESCR 1 USED 3 3 w 2 
+
+//write(fd1,wbuf1);    	->   P1 : Writes data from wbuf1 to the file of fd1(f1)
+ALLOC BLOCK 4 USED NORMAL 17            // New block4 that stores value 17 from wbuf1
+UPDATE INODE 3 USED NORMAL 1 1 1 [4]    // Inode 3 is updated with blocks=1[4], size=1, links=1
+UPDATE FDESCR 0 USED 1 1 w 1 
+
+//close(fd1);          	->   P1 : Closes file in fd1 (f1)
+UPDATE FDESCR 0 FREE                    // Close File descriptor 0 (file f1)
+UPDATE INODE 3 USED NORMAL 1 1 0 [4] 
+
+//fd2 = open("f1",r);  	->   P1 : Reopens file f1 in read mode (r) and assigns to the descriptor fd2
+ALLOC FDESCR 0 USED 1 1 r 0             // File descriptor(ID 1) 0 in read mode (r) at position 0
+UPDATE INODE 3 USED NORMAL 1 1 1 [4] 
+
+//fd3 = open("f2",r);  	->   P2 : Reopens file f2 in read mode (r) and assigns to the descriptor fd3
+ALLOC FDESCR 1 USED 2 2 r 0             // File descriptor(ID 2) 1 in read mode (r) at position 0
+UPDATE INODE 1 USED NORMAL 2 1 1 [0,1] 
+
+//read(fd3,rbuf2);     	->   P2 : Reads data from file in fd3(f2) into rbuf2
+UPDATE BUFFER rbuf2 NORMAL 19           // Update rbuf2 with block value 19
+UPDATE FDESCR 1 USED 2 2 r 1            // Update file descriptor(ID 2) 1 in read mode (r) at position 1 (read 1 block)
+
+//read(fd3,rbuf3);     	->   P2 : Reads data from file in fd3(f2) into rbuf3
+UPDATE BUFFER rbuf3 NORMAL 23           // Update rbuf3 with block value 23
+UPDATE FDESCR 1 USED 2 2 r 2            // Update file descriptor(ID 2) 1 in read mode (r) at position 2 (read 2 blocks)
+
+//read(fd2,rbuf1);     	->   P1 : Reads data from file in fd2(f1) into rbuf1
+UPDATE BUFFER rbuf1 NORMAL 17           // Update rbuf1 with block value 17
+UPDATE FDESCR 0 USED 1 1 r 1            // Update file descriptor(ID 1) 3 in read mode (r) at position 1 (read 1 block)
+
+//close(fd4);           ->   P3 : Closes file in fd4 (f3)
+UPDATE FDESCR 1 FREE                    // Close File descriptor 1 (file f3)
+UPDATE INODE 1 USED NORMAL 2 1 0 [0,1]
+
+//close(fd2);    	    ->   P1 : Closes file in fd2 (f1)
+UPDATE FDESCR 0 FREE                    // Close File descriptor 3 (file f1)
+UPDATE INODE 3 USED NORMAL 1 1 0 [4] 
+
+//close(fd3);          	->   P2 : Closes file in fd3 (f2)
+UPDATE FDESCR 1 FREE                    // Close File descriptor 4 (file f2)
+
+//fd5 = open("f3",r);  	->   P3 : Reopens file f3 in read mode (r) and assigns to the descriptor fd5
+ALLOC FDESCR 1 USED 3 3 r 0             // File descriptor(ID 3) 1 in read mode (r) at position 0
+UPDATE INODE 2 USED NORMAL 2 1 1 [2,3]
+
+//fd6 = open("f3",r);  	->   P3 : Reopens file f3 in read mode (r) and assigns to the descriptor fd6
+ALLOC FDESCR 2 USED 3 3 r 0             // File descriptor(ID 3) 2 in read mode (r) at position 0
+UPDATE INODE 2 USED NORMAL 2 1 2 [2,3]
+
+//read(fd5,rbuf4);  	->   P3 : Reads data from file in fd5(f3) into rbuf4
+UPDATE BUFFER rbuf4 NORMAL 17           // Update rbuf4 with block value 17
+UPDATE FDESCR 1 USED 3 3 r 1            // Update file descriptor(ID 3) 1  in read mode (r) at position 1 (read 1 block)
+
+//read(fd6,rbuf5);      ->   P3 : Reads data from file in fd6(f3) into rbuf5
+UPDATE BUFFER rbuf5 NORMAL 29           // Update rbuf5 with block value 29
+UPDATE FDESCR 2 USED 3 3 r 1            // Update file descriptor(ID 3) 2 in read mode (r) at position 1 (read 1 block)
+
+//close(fd5);    	    ->   P3 : Closes file in fd5 (f3)
+UPDATE FDESCR 1 FREE                    // Close File descriptor 1 (file f3)
+UPDATE INODE 2 USED NORMAL 2 1 1 [2,3]
+
+//close(fd6);          	->   P3 : Closes file in fd6 (f3)
+UPDATE FDESCR 2 FREE                    // Close File descriptor 2 (file f3)
+UPDATE INODE 2 USED NORMAL 2 1 0 [2,3]
