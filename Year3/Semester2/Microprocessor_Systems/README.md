@@ -2,6 +2,9 @@
 
 This repository contains coursework and labs from a **Microprocessor Systems** module, focused on low-level programming using **C and Assembly** on the **Raspberry Pi Pico**. We explored bare-metal development, GPIO handling, debugging techniques, and how to interface software directly with hardware components like buttons, LEDs, and timers.
 
+ **Repository Link (GitLab):**  
+[https://gitlab.scss.tcd.ie/obyrnean/pico-apps](https://gitlab.scss.tcd.ie/obyrnean/pico-apps)
+
 ---
 
 ## Key Concepts
