@@ -1,0 +1,15 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// College: Trinity College Dublin
+// Engineer: Ane O'Byrne
+// Create Date: 18.02.2025 17:17:57
+// Design Name: XNOR Module
+// Module Name: xnor_module
+// Project Name: Assignment1
+// Target Devices: Basys3
+// Description: Compute the bitwise XNOR of A and B for A XNOR B
+//////////////////////////////////////////////////////////////////////////////////
+
+module xnor_module(input [5:0] A, B, output [5:0] xnor_out);
+    assign xnor_out = ~(A ^ B);  // Bitwise XNOR operation
+endmodule
