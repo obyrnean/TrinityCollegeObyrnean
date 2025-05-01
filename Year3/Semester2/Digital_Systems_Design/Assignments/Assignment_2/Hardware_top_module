@@ -1,0 +1,56 @@
+`timescale 1ns / 1ps
+
+
+module Hardware_top_module(
+    input wire CCLK,             // 100 MHz clock from Basys 3
+    input wire reset,            // Active-high reset button 
+    output wire [6:0] seg,       // 7-segment cathodes
+    output wire [3:0] an,        // 7-segment anodes (active low)
+    //output wire detected,       // High when sequence is detected
+    output wire [15:0] leds      // Only output the first 16 bits of LFSR for LEDs
+);
+    // Signals
+    wire [15:0] count_slow;      // Raw count in slow clock domain
+    wire slow_clk;               // Slowed-down clock
+    wire [15:0] count;           // Count synchronized to 100 MHz
+    wire [22:0] lfsr_out;        // Full LFSR output
+
+    // Parameter: set clkscale to divide 100 MHz down to ~1 Hz for visual effect
+    parameter CLK_DIV = 32'd50000000; // 100MHz / (2 * 50M) = ~1Hz
+
+    // Instantiate clock divider module
+    clock clock_divider (
+        .CCLK(CCLK),
+        .clkscale(CLK_DIV),
+        .clk(slow_clk)
+    );
+
+    // Instantiate the top-level logic (FSM + LFSR)
+    Top_lvl_module top_logic (
+        .clk(slow_clk),
+        .reset(reset),
+        .lfsr_out(lfsr_out),
+        .count(count_slow)
+    );
+    
+    // Synchronize count into 100 MHz domain to safely display
+    reg [15:0] count_sync_1, count_sync_2;
+    always @(posedge CCLK) begin
+        count_sync_1 <= count_slow;
+        count_sync_2 <= count_sync_1;
+    end
+
+    assign count = count_sync_2; // Expose synchronized count as output
+    // Output only the first 16 bits of the LFSR for the LEDs
+    assign leds = lfsr_out[15:0];  // Truncate the LFSR to 16 bits for LED display
+
+    // 7-Segment display
+    sevenseg seg_disp (
+        .clk(CCLK),
+        .reset(reset),
+        .hex_count(count),
+        .anode_select(an),
+        .LED_out(seg)
+    );
+endmodule
+
