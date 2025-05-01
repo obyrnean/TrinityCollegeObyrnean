@@ -1,0 +1,77 @@
+`timescale 1ns / 1ps
+
+module sevenseg(
+    input clk, // 100 Mhz clock source on Basys 3 FPGA
+    input reset, // reset
+    input [15:0] hex_count, // full 4-digit hex input
+    output reg [3:0] anode_select, // select one of the 4 7-segment modules by choosing one to be activated - note that this is an active low signal
+    output reg [6:0] LED_out// cathode patterns of the 7-segment LED display
+    );
+
+    wire [1:0] digit_index;
+    reg [3:0] current_digit;
+    reg [19:0] refresh_counter; // 20-bit for creating 10.5ms refresh period or 380Hz refresh rate
+             // the first 2 MSB bits for creating 4 LED-activating signals with 2.6ms digit period
+
+    wire [1:0] digit_index; 
+                 // count     0    ->  1  ->  2  ->  3
+              // activates    LED1    LED2   LED3   LED4
+             // and repeat
+    
+    always @(posedge clk or posedge reset)
+    begin 
+        if(reset==1)
+            refresh_counter <= 0;
+        else
+            refresh_counter <= refresh_counter + 1;
+    end 
+    
+    assign digit_index = refresh_counter[19:18]; // 4-digit cycling
+    // anode activating signals for 4 LEDs, digit period of 2.6ms
+    // decoder to generate anode signals 
+
+    // Select which digit to display and which nibble to show
+    always @(*) begin
+        case(digit_index)
+            2'b00: begin
+                anode_select = 4'b1110; // Rightmost digit (LSB)
+                current_digit = hex_count[3:0];
+            end
+            2'b01: begin
+                anode_select = 4'b1101;
+                current_digit = hex_count[7:4];
+            end
+            2'b10: begin
+                anode_select = 4'b1011;
+                current_digit = hex_count[11:8];
+            end
+            2'b11: begin
+                anode_select = 4'b0111; // Leftmost digit (MSB)
+                current_digit = hex_count[15:12];
+            end
+        endcase
+    end
+    
+    // Hex digit to 7-segment encoding
+    always @(*) begin
+        case(current_digit)
+            4'h0: LED_out = 7'b0000001; // 0
+            4'h1: LED_out = 7'b1001111; // 1
+            4'h2: LED_out = 7'b0010010; // 2
+            4'h3: LED_out = 7'b0000110; // 3
+            4'h4: LED_out = 7'b1001100; // 4
+            4'h5: LED_out = 7'b0100100; // 5
+            4'h6: LED_out = 7'b0100000; // 6
+            4'h7: LED_out = 7'b0001111; // 7
+            4'h8: LED_out = 7'b0000000; // 8
+            4'h9: LED_out = 7'b0000100; // 9
+            4'hA: LED_out = 7'b0001000; // A
+            4'hB: LED_out = 7'b1100000; // b
+            4'hC: LED_out = 7'b0110001; // C
+            4'hD: LED_out = 7'b1000010; // d
+            4'hE: LED_out = 7'b0110000; // E
+            4'hF: LED_out = 7'b0111000; // F
+            default: LED_out = 7'b1111111; // blank/off
+        endcase
+    end
+ endmodule
