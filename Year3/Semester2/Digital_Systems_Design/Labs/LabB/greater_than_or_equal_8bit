@@ -1,0 +1,27 @@
+`timescale 1ns / 1ps
+
+
+module greater_than_or_equal_8bit (
+    input wire [7:0] a, b,
+    output wire a_ge_b
+);
+
+    // Intermediate signals for 2-bit comparisons
+    wire gt3, gt2, gt1, gt0; // GT outputs for each 2-bit block
+    wire eq3, eq2, eq1, eq0; // EQ outputs for each 2-bit block
+
+    // Compare each 2-bit section
+    greater_than_2bit gt_unit3 (.a1(a[7]), .a0(a[6]), .b1(b[7]), .b0(b[6]), .gt(gt3));
+    greater_than_2bit gt_unit2 (.a1(a[5]), .a0(a[4]), .b1(b[5]), .b0(b[4]), .gt(gt2));
+    greater_than_2bit gt_unit1 (.a1(a[3]), .a0(a[2]), .b1(b[3]), .b0(b[2]), .gt(gt1));
+    greater_than_2bit gt_unit0 (.a1(a[1]), .a0(a[0]), .b1(b[1]), .b0(b[0]), .gt(gt0));
+
+    eq2 eq_unit3 (.a(a[7:6]), .b(b[7:6]), .aeqb(eq3));
+    eq2 eq_unit2 (.a(a[5:4]), .b(b[5:4]), .aeqb(eq2));
+    eq2 eq_unit1 (.a(a[3:2]), .b(b[3:2]), .aeqb(eq1));
+    eq2 eq_unit0 (.a(a[1:0]), .b(b[1:0]), .aeqb(eq0));
+
+    // Combining logic for greater than or equal comparison
+    assign a_ge_b = gt3 | (eq3 & gt2) | (eq3 & eq2 & gt1) | (eq3 & eq2 & eq1 & gt0) | (eq3 & eq2 & eq1 & eq0);
+
+endmodule
