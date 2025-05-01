@@ -1,0 +1,27 @@
+`timescale 1ns / 1ps
+
+module top_module(
+    input wire CCLK,          // 100MHz input clock
+    input wire reset,         // Reset signal
+    output wire [15:0] lfsr_out,   // Output LEDs displaying LFSR state
+    output wire max_tick      // Output max_tick_reg
+);
+    
+    wire slow_clk;            // Slowed-down clock output from clock divider
+    
+    // Clock divider instance
+    clock clock_divider (
+        .CCLK(CCLK),
+        .clkscale(32'd50000000), // Scale factor for 1Hz clock (assuming 100MHz input clock)
+        .clk(slow_clk)
+    );
+    
+    // LFSR instance
+    LFSR_module lfsr_inst (
+        .clk(slow_clk),        // Use the slowed-down clock
+        .reset(reset),
+        .lfsr_out(lfsr_out),        // Map LFSR output to LEDs
+        .max_tick_reg(max_tick) // Output max_tick_reg
+    );
+    
+endmodule
