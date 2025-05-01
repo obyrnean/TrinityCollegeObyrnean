@@ -1,0 +1,63 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: Trinity College Dublin
+// Engineer: Ane O'Byrne
+// Create Date: 01.04.2025 11:18:38
+// Design Name: Assignment 2
+// Module Name: Top_lvl_tb
+// Project Name: Top Level Testbench
+// Target Devices: Basys 3
+// Description: Testbench to test the top level module
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+
+module Top_lvl_tb;
+    // Testbench Signals
+    reg clk;
+    reg reset;
+    wire max_tick_reg;
+    wire detected;
+    wire [15:0] count;
+    wire [22:0] lfsr_out;
+
+    // Instantiate the Top-level module
+    Top_lvl_module uut (
+        .clk(clk),
+        .reset(reset),
+        .max_tick_reg(max_tick_reg),
+        .detected(detected),
+        .lfsr_out(lfsr_out),
+        .count(count)
+    );
+
+    // Generate clock with a period of 10 ns (100 MHz)
+    initial begin
+        clk = 0;
+        forever #5 clk = ~clk; // Toggle clock every 5 ns
+    end
+
+    // Stimulus Procedure
+    initial begin
+       // Initialize signals
+        #0 reset = 1;           // Start with reset high
+        
+        // Wait for the reset to be applied for 10 clock cycles
+        #100 reset = 0;  // 10 clock cycles (each clock cycle is 10 ns, so 10 * 10ns = 100ns)
+       
+        // Run simulation for some time
+        #83886170; // 2^N -1 microseconds
+        // End Simulation
+        $stop;
+    end
+    
+    initial begin
+     // Monitor values
+        $monitor("Time = %d | LFSR = %b | Detected = %b | Count = %d | MaxTick = %b", 
+                 $realtime, lfsr_out, detected, count, max_tick_reg);
+    end
+
+endmodule
