@@ -1,0 +1,81 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: Trinity College Dublin
+// Engineer: Ane O'Byrne
+// 
+// Create Date: 01.04.2025 10:50:56
+// Design Name: Assignment 2
+// Module Name: FSM_module
+// Project Name: FSM module
+// Target Devices: Basys 3
+// Tool Versions: 
+// Description: FSM module to count codeword sequences in our LFSR otuputs
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+
+module FSM_module(
+    input wire clk,         // Clock signal
+    input wire reset,       // Asynchronous active-high reset
+    input wire max_tick_reg,   // Max tick from LFSR module
+    input wire lfsr_bit,    // LSB of the LFSR output
+    output reg detected,    // Output goes high when sequence "010111" is detected
+    output reg [15:0] count  // Counter for detected sequences
+);
+
+    // State encoding using parameter for Moore FSM
+    parameter A0 = 3'b000; // Initial state, waiting for a 0
+    parameter A1 = 3'b001; // Have '0', waiting for a 1
+    parameter A2 = 3'b010; // Have '01', waiting for a 0
+    parameter A3 = 3'b011; // Have '010', waiting for a 1
+    parameter A4 = 3'b100; // Have '0101', waiting for a 1
+    parameter A5 = 3'b101; // Have '01011', waiting for a 1
+    parameter A6 = 3'b110; // Have '010111', wanted sequence output detected
+
+    // Register for current state
+    reg [2:0] state, next_state;
+
+    // Sequential logic: state transition on rising clock edge
+    always @(posedge clk or posedge reset or posedge max_tick_reg) begin
+        if (reset || max_tick_reg)
+            state <= A0;
+        else
+            state <= next_state;
+    end
+
+    // Combinational logic: next state transitions
+    always @(*) begin
+        case (state)
+            A0: next_state = (lfsr_bit == 1'b0) ? A1 : A0;   // If A0 = 0 -> A1
+            A1: next_state = (lfsr_bit == 1'b1) ? A2 : A1;   // If A1 = 1 -> A2
+            A2: next_state = (lfsr_bit == 1'b0) ? A3 : A0;   // If A2 = 0 -> A3
+            A3: next_state = (lfsr_bit == 1'b1) ? A4 : A1;   // If A3 = 1 -> A4
+            A4: next_state = (lfsr_bit == 1'b1) ? A5 : A1;   // If A4 = 1 -> A5
+            A5: next_state = (lfsr_bit == 1'b1) ? A6 : A1;   // If A5 = 1 -> A6
+            A6: next_state = (lfsr_bit == 1'b0) ? A1 : A0;   // Detected, wait for reset
+            default: next_state = A0;
+        endcase
+    end
+
+    // Moore model output logic (only dependent on state)
+    always @(posedge clk or posedge reset or posedge max_tick_reg) begin
+        if (reset || max_tick_reg)
+            detected <= 0;
+        else if (state == A6)
+            detected <= 1;  // Sequence detected
+        else
+            detected <= 0;
+    end
+    
+    // Sequence count register
+    always @(posedge clk or posedge reset or posedge max_tick_reg) begin
+        if (reset || max_tick_reg)
+            count <= 0; // Reset count on reset
+        else if (state == A6) 
+            count <= count + 1; // Increment count when sequence is detected
+    end
+
+endmodule
